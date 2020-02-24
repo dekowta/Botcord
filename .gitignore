@@ -1,0 +1,12 @@
+.vs/
+Botcord.Audio/bin/
+Botcord.Discord/bin/
+Botcord.Discord/obj/
+Botcord.Script/bin/
+Botcord.Script/obj/
+Botcord/bin/
+Scripts/bin/
+Scripts/obj/
+Botcord.Audio/obj/
+Botcord.Core/bin/
+Botcord.Core/obj/

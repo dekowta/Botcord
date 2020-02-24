@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <ProjectGuid>{6542DD44-5723-49C0-A3B9-F741002751DE}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Botcord.Audio\Botcord.Audio.csproj" />
+    <ProjectReference Include="..\Botcord.Core\Botcord.Core.csproj" />
+    <ProjectReference Include="..\Botcord.Discord\Botcord.Discord.csproj" />
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="robocopy $(ProjectDir)global $(SolutionDir)\Botcord\$(OutDir)..\netcoreapp3.1\scripts\global /is /it &#xD;&#xA;robocopy $(ProjectDir)admin $(SolutionDir)\Botcord\$(OutDir)..\netcoreapp3.1\scripts\admin /is /it&#xD;&#xA;exit 0" />
+  </Target>
+</Project>

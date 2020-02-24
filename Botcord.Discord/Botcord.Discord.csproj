@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <ProjectGuid>{B2703EC3-8D93-4245-BE75-5978D2D783F4}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Botcord.Audio\Botcord.Audio.csproj" />
+    <ProjectReference Include="..\Botcord.Core\Botcord.Core.csproj" />
+    <ProjectReference Include="..\Botcord.Script\Botcord.Script.csproj" />
+  </ItemGroup>
+</Project>
