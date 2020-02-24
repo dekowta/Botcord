@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Botcord": {
-      "commandName": "Project",
-      "commandLineArgs": "-token=MTg5MzU4MzM5Nzk5Mzg0MDY0.XlFxAg.WoXXfGHewRU3-vlyPfxI7WqonY8 -admin=137640725419524096 -debug=227107678038654977"
-    }
-  }
-}
