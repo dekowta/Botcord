@@ -32,7 +32,7 @@ namespace Botcord.Discord
         {
             if(client != m_client)
             {
-                Logging.LogDebug(LogType.Discord, "NEW CLIENT IS DIFFERENT FROM OLD");
+                Logging.LogDebug(LogType.Discord, "Client Reset");
             }
 
             if (client != null)
@@ -196,7 +196,7 @@ namespace Botcord.Discord
             options.AddReference("Discord.Net.WebSocket.dll");
             options.AddReference("Discord.Net.Rest.dll");
 
-            return ScriptBuilder.Instance.TryBuildScript<IDiscordScript>(script, options, out scripts);
+            return ScriptBuilder.Instance.TryBuildScript(script, options, out scripts);
         }
     }
 }

@@ -238,6 +238,7 @@ namespace Scripts.global
                     if (timeSpanFromNow.Ticks == 0)
                     {
                         await e.Channel.SendMessageAsync($":warning: | time `{time}` is not valid (format may be wrong day/month@hour:minute or Time is less then the current time)");
+                        return;
                     }
                 }
                 catch (Exception)
@@ -255,6 +256,7 @@ namespace Scripts.global
                     if (timeSpanFromNow.Ticks == 0)
                     {
                         await e.Channel.SendMessageAsync($":warning: | time `{time}` is not valid (format may be wrong days@hours:minutes or time is negative)");
+                        return;
                     }
                 }
                 catch (Exception)

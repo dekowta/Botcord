@@ -7,14 +7,14 @@ namespace Botcord.Script
 {
     public class ScriptCache
     {
-        private Dictionary<string, Assembly> m_cachedAssemblies = new Dictionary<string, Assembly>();
+        private Dictionary<string, AssemblyReference> m_cachedAssemblies = new Dictionary<string, AssemblyReference>();
 
         public bool IsCached(string script)
         {
             return m_cachedAssemblies.ContainsKey(script);
         }
 
-        public bool CacheAssembly(string script, Assembly asm)
+        public bool CacheAssembly(string script, AssemblyReference asm)
         {
             if (IsCached(script))
                 return false;
@@ -24,7 +24,7 @@ namespace Botcord.Script
             return true;
         }
 
-        public Assembly GetCachedAssembly(string script)
+        public AssemblyReference GetCachedAssembly(string script)
         {
             if (IsCached(script))
                 return m_cachedAssemblies[script];

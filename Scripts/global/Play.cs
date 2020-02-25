@@ -695,7 +695,7 @@ namespace Scripts.global
             }
 
             player.ConnectToVoice(logger, voiceChannel);
-            Task.Delay(100);
+            Task.Delay(1000);
         }
 
         public async void AddIntro(Dictionary<string, object> parameters, SocketMessage e)
@@ -848,7 +848,7 @@ namespace Scripts.global
                 else if (!player.IsConnected() || voiceChannel != player.ConnectedChannel())
                 {
                     player.ConnectToVoice(null, voiceChannel);
-                    Task.Delay(100);
+                    Task.Delay(1000);
                     if (!player.IsConnected())
                     {
                         Logging.LogError(LogType.Script, $"Failed to connect player on guild {m_host.Guild.Name}");

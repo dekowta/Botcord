@@ -25,7 +25,7 @@ namespace Botcord.Script
         public bool TryBuildScript<T>(string scriptFile, CompilerOptions options, out IEnumerable<T> scriptObjects)
         {
             scriptObjects = null;
-            Assembly assemblyObject = null;
+            AssemblyReference assemblyObject = null;
 
             ScanReferences(scriptFile, options);
 
@@ -43,10 +43,10 @@ namespace Botcord.Script
             return false;
         }
 
-        private IEnumerable<T> CreateInstances<T>(Assembly asm)
+        private IEnumerable<T> CreateInstances<T>(AssemblyReference asm)
         {
             List<T> instances = new List<T>();
-            Type[] asmTypes = asm.GetTypes();
+            Type[] asmTypes = asm.Assembly.GetTypes();
             IEnumerable<Type> types = asmTypes.Where(t => IsOfType<T>(t));
             foreach(var type in types)
             {

@@ -40,12 +40,12 @@ namespace Botcord.Script
             return m_cache.IsCached(script);
         }
 
-        public bool TryCompile(string script, out Assembly assembly)
+        public bool TryCompile(string script, out AssemblyReference assembly)
         {
             return TryCompile(script, CompilerOptions.Default, out assembly);
         }
 
-        public bool TryCompile(string script, CompilerOptions compilerOptions, out Assembly assembly)
+        public bool TryCompile(string script, CompilerOptions compilerOptions, out AssemblyReference assembly)
         {
             assembly = null;
 
@@ -78,24 +78,31 @@ namespace Botcord.Script
                 if (!success) return false;
 
                 CSharpCompilation compilation = CSharpCompilation.Create(scriptName, syntax, references, compilerOptions.Options);
-                Assembly compiledAssembly = LoadAssembly(scriptName, compilation);
+                AssemblyReference compiledAssembly = LoadAssembly(scriptName, compilation);
                 assembly = compiledAssembly;
-                if (compiledAssembly != null)
+                if (compiledAssembly.IsLoaded)
                 {
                     Logging.LogInfo(LogType.Bot, $"Compilation of script {script} successful.");
-                    m_cache.CacheAssembly(script, compiledAssembly);
-                    return true;
-                }
-                else
-                {
-                    return false;
+                    Logging.LogInfo(LogType.Bot, $"Attempting to load reference Assemblies.");
+                    if (TryLoadingReferences(references))
+                    {
+                        Logging.LogInfo(LogType.Bot, $"Compilation of script {script} successful.");
+                        m_cache.CacheAssembly(script, compiledAssembly);
+                        return true;
+                    }
+                    else
+                    {
+                        Logging.LogError(LogType.Bot, $"Script {script} has a reference library that was not loaded. Unloading script assembly.");
+                        compiledAssembly.Unload();
+                    }
                 }
             }
             catch(Exception ex)
             {
                 Logging.LogException(LogType.Bot, ex, "Failed to compiled script");
-                return false;
             }
+
+            return false;
         }
 
 
@@ -111,7 +118,7 @@ namespace Botcord.Script
             }
         }
 
-        private Assembly LoadAssembly(string name, CSharpCompilation compilation)
+        private AssemblyReference LoadAssembly(string name, CSharpCompilation compilation)
         {
             using (var codeStream = new MemoryStream())
             {
@@ -132,7 +139,8 @@ namespace Botcord.Script
                     if (compilationResult.Success)
                     {
                         codeStream.Seek(0, SeekOrigin.Begin);
-                        Assembly assembly = AssemblyLoadContext.Default.LoadFromStream(codeStream);
+                        CollectableAssemblyContext assemblyContext = new CollectableAssemblyContext();
+                        AssemblyReference assembly = assemblyContext.LoadFromStream(codeStream);
                         return assembly;
                     }
                     else
@@ -149,6 +157,30 @@ namespace Botcord.Script
             return null;
         }
         
+        private bool TryLoadingReferences(IEnumerable<PortableExecutableReference> references)
+        {
+            try
+            {
+                foreach (var reference in references)
+                {
+                    string referencePath = Path.GetFullPath(reference.FilePath);
+                    bool found = AppDomain.CurrentDomain.GetAssemblies().Any(a => !a.IsDynamic && a.Location == referencePath);
+                    if (!found)
+                    {
+                        Logging.LogInfo(LogType.Bot, $"Loading Required Reference from {referencePath}.");
+                        AssemblyLoadContext.Default.LoadFromAssemblyPath(referencePath);
+                    }
+                }
+
+                return true;
+            }
+            catch(Exception ex)
+            {
+                Logging.LogException(LogType.Bot, ex, "Failed to load references script will not be loaded");
+                return false;
+            }
+        }
+
         private PortableExecutableReference FindAndCreateReference(string asm, CompilerOptions options)
         {
             if(File.Exists(asm))
