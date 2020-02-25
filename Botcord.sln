@@ -2,8 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdParty", "3rdParty", "{62F1F1F1-7303-4FDD-BD9C-A7D5B9B37CBD}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Script", "Script", "{EC2C4AE6-B17A-4D24-853E-EBF04F8FD52A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Botcord", "Botcord\Botcord.csproj", "{B74A09F4-06AC-4B71-A62D-9055258AB4AA}"
@@ -20,8 +18,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Botcord.Audio", "Botcord.Audio\Botcord.Audio.csproj", "{5F6C9156-B2F3-4CFD-9765-C231D6A01DC5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scripts", "Scripts\Scripts.csproj", "{6542DD44-5723-49C0-A3B9-F741002751DE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "libvideo-standard", "External\libvideo-master\src\libvideo-standard\libvideo-standard.csproj", "{CED7DA18-795F-4514-A39D-4B6226511DBD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -105,25 +101,12 @@ Global
 		{6542DD44-5723-49C0-A3B9-F741002751DE}.Release|x64.Build.0 = Release|Any CPU
 		{6542DD44-5723-49C0-A3B9-F741002751DE}.Release|x86.ActiveCfg = Release|Any CPU
 		{6542DD44-5723-49C0-A3B9-F741002751DE}.Release|x86.Build.0 = Release|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Debug|x64.Build.0 = Debug|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Debug|x86.Build.0 = Debug|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Release|x64.ActiveCfg = Release|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Release|x64.Build.0 = Release|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Release|x86.ActiveCfg = Release|Any CPU
-		{CED7DA18-795F-4514-A39D-4B6226511DBD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6542DD44-5723-49C0-A3B9-F741002751DE} = {EC2C4AE6-B17A-4D24-853E-EBF04F8FD52A}
-		{CED7DA18-795F-4514-A39D-4B6226511DBD} = {62F1F1F1-7303-4FDD-BD9C-A7D5B9B37CBD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {92DFE066-8EF5-4C86-842B-5C4B3E00AB1C}

@@ -17,9 +17,9 @@
   <ItemGroup>
     <PackageReference Include="NAudio" Version="1.10.0" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
+    <PackageReference Include="VideoLibrary" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Botcord.Core\Botcord.Core.csproj" />
-    <ProjectReference Include="..\External\libvideo-master\src\libvideo-standard\libvideo-standard.csproj" />
   </ItemGroup>
 </Project>
