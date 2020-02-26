@@ -19,6 +19,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Botcord.Audio", "Botcord.Au
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scripts", "Scripts\Scripts.csproj", "{6542DD44-5723-49C0-A3B9-F741002751DE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotConsole", "BotConsole\BotConsole.csproj", "{DDE3CA5D-071D-4B95-A211-829C53E231A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B74A09F4-06AC-4B71-A62D-9055258AB4AA} = {B74A09F4-06AC-4B71-A62D-9055258AB4AA}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +106,18 @@ Global
 		{6542DD44-5723-49C0-A3B9-F741002751DE}.Release|x64.Build.0 = Release|Any CPU
 		{6542DD44-5723-49C0-A3B9-F741002751DE}.Release|x86.ActiveCfg = Release|Any CPU
 		{6542DD44-5723-49C0-A3B9-F741002751DE}.Release|x86.Build.0 = Release|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Debug|x64.Build.0 = Debug|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Debug|x86.Build.0 = Debug|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Release|x64.ActiveCfg = Release|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Release|x64.Build.0 = Release|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Release|x86.ActiveCfg = Release|Any CPU
+		{DDE3CA5D-071D-4B95-A211-829C53E231A4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -11,3 +11,6 @@ Botcord.Audio/obj/
 Botcord.Core/bin/
 Botcord.Core/obj/
 Botcord/Properties/launchSettings.json
+BotConsole/bin/
+BotConsole/obj/
+BotConsole/Properties/launchSettings.json

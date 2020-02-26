@@ -12,12 +12,14 @@ namespace Botcord
         private static string commandLine = "(-token=<t> -admin=<a> | -compile=<s>) [-timeout=<t>] [-name=<n>] [-debug=<d>] [-help]";
         private static string help = "  -token: The discord bot token https://discordapp.com/login?redirect_to=/developers/applications/me \n" +
             "   -admin: The admin user ID (long number) \n" +
+            "   -compile: compiles a script for testing \n" +
             "   -timeout: Optional Time it takes for a random disconnection to reconnect in ms \n" +
             "   -name: Optional bot name \n" +
             "   -debug: The server Id to log errors to \n" +
             "   -help: will show this message \n";
         private static CommandLineArgs cmdArgs = new CommandLineArgs(commandLine, help);
 
+        private static bool ExitProcess = false;
 
         static int Main(string[] args)
         {
@@ -28,6 +30,7 @@ namespace Botcord
             if (!cmdArgs.IsMatch(args))
             {
                 Logging.LogError(LogType.Bot, "Command Line Arguments " + string.Join(" ", args) + "\nAre Invalid.");
+                Console.WriteLine(cmdArgs.Help);
                 WaitAnyKey();
                 return 1;
             }
@@ -70,7 +73,7 @@ namespace Botcord
 
             Utilities.Execute(() => DiscordHost.Instance.Initalise(arguments));
 
-            while (WaitAnyKey())
+            while (WaitAnyKey() && !ExitProcess)
             {
                 System.Threading.Thread.Sleep(5000);
             }
@@ -91,7 +94,7 @@ namespace Botcord
         {
             Logging.LogInfo(LogType.Bot, "Type 'exit' to quit... ");
             string text = Console.ReadLine();
-            if (text.Equals("exit", StringComparison.Ordinal))
+            if (text != null && text.Equals("exit", StringComparison.Ordinal))
                 return true;
 
             return false;
