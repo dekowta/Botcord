@@ -148,7 +148,7 @@ namespace Scripts.global
 
     public class Remind : IDiscordScript
     {
-        public string Name => "Announcer 1.0";
+        public string Name => "Reminder 1.0";
 
         private string ReminderStore
         {

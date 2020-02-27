@@ -5,6 +5,7 @@ using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace Botcord.Discord
 
     public class DiscordScriptManager
     {
-        private Dictionary<SocketGuild, DiscordScriptCollection> m_scriptCollections;
+        private ConcurrentDictionary<ulong, DiscordScriptCollection> m_scriptCollections;
         private DiscordSocketClient m_client;
 
         private DiscordScriptCollection m_adminScriptCollection;
@@ -25,7 +26,7 @@ namespace Botcord.Discord
 
         public DiscordScriptManager()
         {
-            m_scriptCollections = new Dictionary<SocketGuild, DiscordScriptCollection>();            
+            m_scriptCollections = new ConcurrentDictionary<ulong, DiscordScriptCollection>();            
         }
 
         public Task Initalise(DiscordSocketClient client)
@@ -34,23 +35,30 @@ namespace Botcord.Discord
             {
                 Logging.LogDebug(LogType.Discord, "Client Reset");
             }
+            else
+            {
+                Logging.LogDebug(LogType.Discord, "Client Reset but returned the same client will rehook");
+            }
 
             if (client != null)
             {
-                Logging.Log(LogType.Discord, LogLevel.Debug, $"Initalising Client");
-
-
-                //can fail if they havent already been registered
-                try
+                lock (m_mutex)
                 {
-                    m_client.GuildAvailable -= client_GuildAvailable;
-                    m_client.Ready -= client_Ready;
-                }
-                catch { }
+                    Logging.Log(LogType.Discord, LogLevel.Debug, $"Initalising Client");
 
-                m_client = client;
-                m_client.GuildAvailable += client_GuildAvailable;
-                m_client.Ready          += client_Ready;
+                    //can fail if they havent already been registered
+                    try
+                    {
+                        m_client.GuildAvailable -= client_GuildAvailable;
+                        m_client.Ready -= client_Ready;
+                    }
+                    catch { }
+
+                    m_client = client;
+                    m_client.GuildAvailable += client_GuildAvailable;
+                    m_client.Ready += client_Ready;
+                }
+                
                 if (m_adminScriptCollection == null)
                 {
                     lock (m_mutex)
@@ -59,6 +67,7 @@ namespace Botcord.Discord
                         Utilities.ExecuteAndWait(async () => await LoadScripts(DiscordData.ScriptAdminFolder, m_adminScriptCollection));
                     }
                 }
+                
             }
 
             return Task.CompletedTask;
@@ -74,7 +83,7 @@ namespace Botcord.Discord
         {
             lock (m_mutex)
             {
-                if (!m_scriptCollections.ContainsKey(arg))
+                if (!m_scriptCollections.ContainsKey(arg.Id))
                 {
                     Logging.Log(LogType.Discord, LogLevel.Debug, $"Connected to guild {arg.Name}");
 
@@ -84,11 +93,17 @@ namespace Botcord.Discord
                 {
                     Logging.Log(LogType.Discord, LogLevel.Debug, $"Reconnected to guild {arg.Name}");
 
-                    DiscordScriptCollection collection = m_scriptCollections[arg];
-                    collection.Dispose();
-                    collection = null;
+                    DiscordScriptCollection collection;
+                    if (!m_scriptCollections.TryRemove(arg.Id, out collection))
+                    {
+                        Logging.Log(LogType.Discord, LogLevel.Debug, $"Failed to remove previous instance of guild {arg.Name} attempting to dispose any way.");
+                        collection = m_scriptCollections[arg.Id];
+                    }
 
-                    m_scriptCollections.Remove(arg);
+                    if (collection != null)
+                    {
+                        collection.Dispose();
+                    }
 
                     Utilities.Execute(() => LoadScriptCollection(arg));
                 }
@@ -105,12 +120,16 @@ namespace Botcord.Discord
         }
 
         public async Task<bool> LoadScriptCollection(SocketGuild guild)
-        {
-            if (!m_scriptCollections.ContainsKey(guild))
+        {         
+            if (!m_scriptCollections.ContainsKey(guild.Id))
             {
                 DiscordScriptCollection scriptCollection = new DiscordScriptCollection(guild);
-                m_scriptCollections.Add(guild, scriptCollection);
-
+                if(!m_scriptCollections.TryAdd(guild.Id, scriptCollection))
+                {
+                    Logging.Log(LogType.Discord, LogLevel.Error, $"Failed to add guild {guild.Name} to script collection will be ignored");
+                    return false;
+                }
+                
                 await LoadScripts(DiscordData.ScriptAdminFolder, scriptCollection);
                 await LoadScripts(DiscordData.ScriptGlobalFolder, scriptCollection);
                 string serverScripts = Path.Combine(DiscordData.ScriptFolder, guild.Id.ToString());

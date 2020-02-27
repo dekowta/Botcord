@@ -72,11 +72,7 @@ namespace Botcord.Discord
             RegisterCommand("help", "[<command>]", "Shows this message", OnHelpMessage);
             RegisterAdminCommand(DiscordAdmin.DM, "help", "[<command>]", "Shows this message", OnHelpMessage);
 
-            string name = "Admin DM Custom Guild";
-            if(m_guild != null)
-            {
-                name = m_guild.Name;
-            }
+            string name = m_guild != null ? guild.Name : "Admin DM Custom Guild";
 
             m_script.Initalise(this);
 
@@ -95,12 +91,30 @@ namespace Botcord.Discord
 
         public void DettachGuild(SocketGuild guild)
         {
-            m_script.Dispose();
+            string name = m_guild != null ? guild.Name : "Admin DM Custom Guild";
+            
+            Logging.LogInfo(LogType.Bot, $"({m_script.Name}) Disposing of script on guild {name}");
+            try
+            {
+                m_script.Dispose();
+            }
+            catch(Exception ex)
+            {
+                Logging.LogException(LogType.Bot, ex, $"Failed to dispose of script {m_script.Name}");
+            }
 
-            if (m_guild != guild) return;
+            if (m_guild?.Id != guild?.Id)
+            {
+                string newGuildName = guild != null ? guild.Name : "Unknown Guild";
+
+                Logging.LogInfo(LogType.Bot, $"({m_script.Name}) Dettaching guild {newGuildName} does not match guild {name} will dettach any way.");
+            }
+            
             m_client.MessageReceived         -= client_MessageReceived;
             m_client.UserVoiceStateUpdated   -= client_UserVoiceStateUpdated;
             m_client.UserJoined              -= client_UserJoined;
+
+            Logging.LogInfo(LogType.Bot, $"({m_script.Name}) Dettached from guild {name}");
         }
 
         #region Register Events
