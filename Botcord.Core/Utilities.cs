@@ -15,6 +15,7 @@ using System.Net;
 using System.Xml;
 using Botcord.Core.Extensions;
 using System.Web;
+using System.IO.Compression;
 
 namespace Botcord.Core
 {
@@ -43,12 +44,17 @@ namespace Botcord.Core
 
         public static string TempFolder
         {
-            get { return Path.Combine(Utilities.AssemblyPath, "Temp"); }
+            get { return EnsurePath(Path.Combine(Utilities.AssemblyPath, "Temp")); }
         }
 
         public static string DataFolder
         {
-            get { return Path.Combine(Utilities.AssemblyPath, "Data"); }
+            get { return EnsurePath(Path.Combine(Utilities.AssemblyPath, "Data")); }
+        }
+
+        public static string LogFolder
+        {
+            get { return EnsurePath(Path.Combine(Utilities.AssemblyPath, "Logs")); }
         }
 
         public static string DataShortFolder
@@ -106,6 +112,24 @@ namespace Botcord.Core
             return Path.Combine(TempFolder, fileName);
         }
 
+        public static string EnsurePath(string path)
+        {
+            try
+            {
+                FileInfo info = new FileInfo(path);
+            }
+            catch
+            {
+                return Directory.GetCurrentDirectory();
+            }
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            return path;
+        }
 
         #region Async Helpers
 

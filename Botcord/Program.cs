@@ -25,6 +25,8 @@ namespace Botcord
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 
+            FileLogger.Instance.Instantiate();
+
             Console.OutputEncoding = System.Text.Encoding.Unicode;
 
             if (!cmdArgs.IsMatch(args))

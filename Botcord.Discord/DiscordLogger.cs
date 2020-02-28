@@ -66,7 +66,7 @@ namespace Botcord.Discord
             return Task.CompletedTask;
         }
 
-        private void Logging_OnLog(LogLevel level, bool isException, string message)
+        private void Logging_OnLog(LogType type, LogLevel level, bool isException, string message)
         {
             if (DiscordHost.Instance.Client.LoginState != LoginState.LoggedIn) return;
 

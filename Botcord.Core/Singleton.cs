@@ -15,5 +15,7 @@ namespace Botcord.Core
                 return _instance;
             }
         }
+
+        public void Instantiate() { }
     }
 }

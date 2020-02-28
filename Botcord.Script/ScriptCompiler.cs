@@ -70,7 +70,8 @@ namespace Botcord.Script
 
                 bool success = false;
                 IEnumerable<PortableExecutableReference> references = null;
-                success = Utilities.TryCatch(() => references = compilerOptions.Assemblies.Select(asm => FindAndCreateReference(asm, compilerOptions)), "Failed to create meta data from assembly");
+                success = Utilities.TryCatch(() => references = compilerOptions.Assemblies.Select(asm => FindAndCreateReference(asm, compilerOptions)).Where(result => result != null),
+                    "Failed to create meta data from assembly");
                 if (!success) return false;
 
                 SyntaxTree[] syntax = null;

@@ -18,7 +18,7 @@ namespace Botcord.Core
         Debug
     }
 
-    public delegate void LogHandler(LogLevel level, bool isException, string message);
+    public delegate void LogHandler(LogType type, LogLevel level, bool isException, string message);
 
     public class Logging
     {
@@ -78,41 +78,41 @@ namespace Botcord.Core
 
         public static void Log(LogType type, LogLevel level, string message)
         {
-            Log(level, string.Format("[{0}]:[{1}] <{2}> : ", DateTime.Now.ToString("dd/MM/yy HH:mm:ss"), type.ToString(), level.ToString()) + message);
+            InternalLog(type, level, string.Format("[{0}]:[{1}] <{2}> : ", DateTime.Now.ToString("dd/MM/yy HH:mm:ss"), type.ToString(), level.ToString()) + message);
         }
 
         public static void Log(LogType type, LogLevel level, string message, params object[] obj)
         {
-            Log(level, string.Format("[{0}]:[{1}] <{2}> : ", DateTime.Now.ToString("dd/MM/yy HH:mm:ss"), type.ToString(), level.ToString()) + string.Format(message, obj));
+            InternalLog(type, level, string.Format("[{0}]:[{1}] <{2}> : ", DateTime.Now.ToString("dd/MM/yy HH:mm:ss"), type.ToString(), level.ToString()) + string.Format(message, obj));
         }
 
         public static void LogException(LogType type, LogLevel level, string message)
         {
-            LogException(level, string.Format("[{0}]:[{1}] <{2}> : ", DateTime.Now.ToString("dd/MM/yy HH:mm:ss"), type.ToString(), level.ToString()) + message);
+            InternaLogException(type, level, string.Format("[{0}]:[{1}] <{2}> : ", DateTime.Now.ToString("dd/MM/yy HH:mm:ss"), type.ToString(), level.ToString()) + message);
         }
 
         public static void LogException(LogType type, LogLevel level, string message, params object[] obj)
         {
-            LogException(level, string.Format("[{0}]:[{1}] <{2}> : ", DateTime.Now.ToString("dd/MM/yy HH:mm:ss"), type.ToString(), level.ToString()) + string.Format(message, obj));
+            InternaLogException(type, level, string.Format("[{0}]:[{1}] <{2}> : ", DateTime.Now.ToString("dd/MM/yy HH:mm:ss"), type.ToString(), level.ToString()) + string.Format(message, obj));
         }
 
-        private static void Log(LogLevel level, string message)
+        private static void InternalLog(LogType type, LogLevel level, string message)
         {
             lock (m_mutex)
             {
                 if (OnLog != null)
-                    OnLog(level, false, message);
+                    OnLog(type, level, false, message);
 
                 Console.WriteLine(message);
             }
         }
 
-        private static void LogException(LogLevel level, string message)
+        private static void InternaLogException(LogType type, LogLevel level, string message)
         {
             lock (m_mutex)
             {
                 if (OnLog != null)
-                    OnLog(level, true, message);
+                    OnLog(type, level, true, message);
 
                 Console.WriteLine(message);
             }

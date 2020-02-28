@@ -11,8 +11,10 @@ using Discord;
 using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
+using System.IO.Compression;
 
-//ASM: System.IO.FileSystem; System.IO;
+//ASM: System.IO.FileSystem;System.IO;System.IO.Compression.ZipFile;System.Diagnostics.Process;System.ComponentModel.Primitives;
 namespace DiscordSharp.CSharp
 {
     public class AttachmentRuleTest : IDiscordRule
@@ -66,7 +68,8 @@ namespace DiscordSharp.CSharp
             ActiveHost.RegisterAdminCommand(DiscordAdmin.DM, "admin", "ping", "Test the bots ping with discord", Ping);
             ActiveHost.RegisterAdminCommand(DiscordAdmin.DM, "admin", "server (list|leave <id>)", "Server information", ServerInfo);
             ActiveHost.RegisterAdminCommand(DiscordAdmin.DM, "admin", "set (((name|playing) <value>) | avatar)", "Sets one of the settings", Set);
-            ActiveHost.RegisterAdminCommand(DiscordAdmin.DM, "admin", "get (avatar [<size>])", "Gets one of the settings", Get);
+            ActiveHost.RegisterAdminCommand(DiscordAdmin.DM, "admin", "get (logs|avatar [<size>])", "Gets one of the settings", Get);
+            //ActiveHost.RegisterAdminCommand(DiscordAdmin.DM, "admin", "reboot", "reboots the server (must have launched through bot console", Reboot);
             ActiveHost.RegisterAdminCommand(DiscordAdmin.DM, "admin", "test [exception|download|disconnect]", "Run Bot Unit Tests", AdminTests);
             ActiveHost.RegisterAdminEvent<SocketMessage>(DiscordAdmin.DM, attachRule, DiscordEventType.PrivateMessageRecieved, AdminTests);
         }
@@ -221,6 +224,23 @@ namespace DiscordSharp.CSharp
                     File.Delete(downloadLocation);
                 }
             }
+
+            if(parameters.ContainsKey("logs"))
+            {
+                string dstfolder = DateTime.UtcNow.ToString("dd_MM_yyyy_HH_mm_ss");
+                string tempLogPath = Utilities.EnsurePath(Path.Combine(Utilities.TempFolder, dstfolder));
+                FileLogger.Instance.CopyLogs(tempLogPath);
+                string zipFile = Path.Combine(Utilities.TempFolder, $"{dstfolder}.zip");
+                ZipFile.CreateFromDirectory(tempLogPath, zipFile);
+                Directory.Delete(tempLogPath, true);
+                await e.Channel.SendFileAsync(zipFile, $":tools: | Log Files");
+                File.Delete(zipFile);
+            }
+        }
+
+        public void Reboot(Dictionary<string, object> parameters, SocketMessage e)
+        {
+            Process.GetCurrentProcess().Kill();
         }
 
         public async void AdminTests(Dictionary<string, object> parameters, SocketMessage e)
