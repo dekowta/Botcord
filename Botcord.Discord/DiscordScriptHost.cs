@@ -427,7 +427,6 @@ namespace Botcord.Discord
                 {
                     DettachGuild(m_guild);
                     m_discordEvents.Clear();
-                    m_script.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

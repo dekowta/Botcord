@@ -4,17 +4,28 @@ using Discord;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Botcord.Discord
 {
+    /// <summary>
+    /// The Host for discord which manages
+    /// the logging system and script manager
+    /// </summary>
     public class DiscordHost : Singleton<DiscordHost>
     {
+        /// <summary>
+        /// The Current Discord Client
+        /// </summary>
         public DiscordSocketClient Client
         {
             get { return m_client; }
         }
 
+        /// <summary>
+        /// The current bot user
+        /// </summary>
         public SocketSelfUser ThisBot
         {
             get
@@ -28,6 +39,7 @@ namespace Botcord.Discord
             }
         }
 
+
         private DiscordScriptManager m_scriptManager;
         private DiscordSocketClient m_client;
 
@@ -36,9 +48,24 @@ namespace Botcord.Discord
 
         private string m_botToken = string.Empty;
 
+        /// <summary>
+        /// Initalise the the Host
+        /// </summary>
+        /// <param name="args">The launch arguments</param>
+        /// <returns>true if the host has been initlaised correctly</returns>
         public async Task<bool> Initalise(Dictionary<string, object> args)
         {
-            DiscordCommandLineArgs.CommandKey = '!';
+            Logging.LogInfo(LogType.Bot, "Initalising the Host");
+
+            var commandKey = args.GetValue<ValueObject>("-commandkey");
+            if (commandKey != null && !commandKey.IsNullOrEmpty)
+            {
+                string key = commandKey.ToString();
+                if(Regex.IsMatch(key, @"^(\S|\d|\w)"))
+                {
+                    DiscordCommandLineArgs.CommandKey = key[0];
+                }
+            }
 
             m_scriptManager = new DiscordScriptManager();
 
@@ -49,10 +76,7 @@ namespace Botcord.Discord
 
             m_client = new DiscordSocketClient(new DiscordSocketConfig()
             {
-                //ConnectionTimeout = timeout
                 ConnectionTimeout = timeout,
-                //HandlerTimeout = 5.Second()
-                //LogLevel = LogSeverity.Debug
             });
 
 
@@ -65,6 +89,7 @@ namespace Botcord.Discord
             }
             else
             {
+                Logging.LogError(LogType.Bot, "Discord Bot Token not set. Get a token at (https://discordapp.com/developers/applications)");
                 return false;
             }
 
@@ -82,57 +107,75 @@ namespace Botcord.Discord
                 m_debugId = debugId.AsULong;
             }
 
+            Logging.LogInfo(LogType.Bot, "Starting Script Manager");
+            await m_scriptManager.Initalise(m_client);
+
             m_client.Connected      += client_Connected;
             m_client.Disconnected   += client_Disconnected;
-            await m_client.LoginAsync(TokenType.Bot, m_botToken);
-            await m_client.StartAsync();
+            await Login();
 
             return true;
         }
 
-        public async Task Logout()
-        {
-            await m_client.LogoutAsync();
-        }
-
+        /// <summary>
+        /// Log the bot into discord
+        /// </summary>
         public async Task Login()
         {
+            Logging.LogInfo(LogType.Bot, "Logging Bot Discord Client in.");
             await m_client.LoginAsync(TokenType.Bot, m_botToken);
+            Logging.LogInfo(LogType.Bot, "Starting Bot Discord Client");
             await m_client.StartAsync();
         }
 
-        private Task client_Connected()
+        /// <summary>
+        /// Logout the bot from discord
+        /// </summary>
+        public async Task Logout()
         {
-            if(m_adminId != 0)
+            Logging.LogInfo(LogType.Bot, "Logging out Bot Discord Client");
+            await m_client.LogoutAsync();
+        }
+
+        private async Task client_Connected()
+        {
+            Logging.LogDebug(LogType.Discord, "Client signaled Connected");
+
+            if (m_adminId != 0)
             {
+                Logging.LogInfo(LogType.Bot, $"Starting Bot Admin with user id {m_adminId}.");
                 DiscordBotAdmin.Instance.Initalise(m_client, m_adminId);
             }
 
             if(m_debugId != 0)
             {
+                Logging.LogInfo(LogType.Bot, $"Starting Bot Discord Logging with id {m_debugId}.");
                 DiscordLogger.Instance.Initalise(m_client, m_debugId);
             }
 
-            Logging.Log(LogType.Discord, LogLevel.Debug, "Client signaled Connected");
-            Utilities.ExecuteAndWait(() => m_scriptManager.Initalise(m_client));
-
-            return Task.CompletedTask;
+            Logging.LogInfo(LogType.Bot, "Starting Script Manager");
+            await m_scriptManager.Initalise(m_client);
         }
 
-        private Task client_Disconnected(Exception arg)
+        private async Task client_Disconnected(Exception arg)
         {
             Logging.Log(LogType.Discord, LogLevel.Debug, "Client signaled Disconnected");
-            Utilities.ExecuteAndWait(() => m_scriptManager.Uninitalise());
 
-            return Task.CompletedTask;
+            Logging.LogInfo(LogType.Bot, "Uninitalising Script Manager");
+            await m_scriptManager.Uninitalise();
         }
 
         private Task client_Log(LogMessage arg)
         {
-            Logging.Log(LogType.Discord, LogLevel.Debug, arg.Message);
+            if (arg.Exception == null)
+            {
+                Logging.Log(LogType.Discord, LogLevel.Debug, arg.Message);
+            }
+            else
+            {
+                Logging.LogException(LogType.Discord, arg.Exception, arg.Message);
+            }
             return Task.CompletedTask;
         }
-
-
     }
 }

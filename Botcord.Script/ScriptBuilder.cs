@@ -25,14 +25,14 @@ namespace Botcord.Script
         public bool TryBuildScript<T>(string scriptFile, CompilerOptions options, out IEnumerable<T> scriptObjects)
         {
             scriptObjects = null;
-            AssemblyReference assemblyObject = null;
 
             ScanReferences(scriptFile, options);
 
+            AssemblyReference assemblyObject;
             m_compiler.TryCompile(scriptFile, options, out assemblyObject);
             if (assemblyObject != null)
             {
-                scriptObjects = CreateInstances<T>(assemblyObject);
+                scriptObjects = assemblyObject.CreateInstances<T>();
 
                 if (scriptObjects.Count() == 0) Logging.LogWarn(LogType.Bot, $"Script {scriptFile} failed to contain any instances of type {typeof(T).Name}.");
                 else Logging.LogInfo(LogType.Bot, $"Found {scriptObjects.Count()} instance of type {typeof(T).Name} in script {scriptFile}");
@@ -41,33 +41,6 @@ namespace Botcord.Script
             }
 
             return false;
-        }
-
-        private IEnumerable<T> CreateInstances<T>(AssemblyReference asm)
-        {
-            List<T> instances = new List<T>();
-            Type[] asmTypes = asm.Assembly.GetTypes();
-            IEnumerable<Type> types = asmTypes.Where(t => IsOfType<T>(t));
-            foreach(var type in types)
-            {
-                try
-                {
-                    T instance = (T)Activator.CreateInstance(type);
-                    instances.Add(instance);
-                }
-                catch(Exception ex)
-                {
-                    Logging.LogException(LogType.Bot, ex, $"Failed to create instance of type {type.Name} or cast to type {typeof(T).Name}.");
-                }
-            }
-
-            return instances;
-        }
-
-        private bool IsOfType<T>(Type type)
-        {
-            Type parentType = typeof(T);
-            return parentType.GetTypeInfo().IsAssignableFrom(type);
         }
 
         private void ScanReferences(string script, CompilerOptions options)

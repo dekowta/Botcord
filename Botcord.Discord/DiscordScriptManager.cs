@@ -29,45 +29,55 @@ namespace Botcord.Discord
             m_scriptCollections = new ConcurrentDictionary<ulong, DiscordScriptCollection>();            
         }
 
-        public Task Initalise(DiscordSocketClient client)
+        public async Task Initalise(DiscordSocketClient client)
         {
             if(client != m_client)
             {
-                Logging.LogDebug(LogType.Discord, "Client Reset");
+                Logging.LogDebug(LogType.Bot, "Client Reset");
             }
             else
             {
-                Logging.LogDebug(LogType.Discord, "Client Reset but returned the same client will rehook");
+                Logging.LogDebug(LogType.Bot, "Client Reset but returned the same client will rehook");
             }
 
             if (client != null)
             {
-                lock (m_mutex)
-                {
-                    Logging.Log(LogType.Discord, LogLevel.Debug, $"Initalising Client");
 
-                    //can fail if they havent already been registered
-                    try
-                    {
-                        m_client.GuildAvailable -= client_GuildAvailable;
-                        m_client.Ready -= client_Ready;
-                    }
-                    catch { }
+                Logging.LogDebug(LogType.Bot, $"Initalising Client");
 
-                    m_client = client;
-                    m_client.GuildAvailable += client_GuildAvailable;
-                    m_client.Ready += client_Ready;
-                }
-                
-                if (m_adminScriptCollection == null)
+                //can fail if they havent already been registered
+                try
                 {
-                    lock (m_mutex)
-                    {
-                        m_adminScriptCollection = new DiscordScriptCollection();
-                        Utilities.ExecuteAndWait(async () => await LoadScripts(DiscordData.ScriptAdminFolder, m_adminScriptCollection));
-                    }
+                    m_client.GuildAvailable -= client_GuildAvailable;
+                    m_client.Ready -= client_Ready;
                 }
-                
+                catch { }
+
+                m_client = client;
+                m_client.GuildAvailable += client_GuildAvailable;
+                m_client.Ready += client_Ready;
+
+                if (m_adminScriptCollection != null)
+                {
+                    m_adminScriptCollection.Dispose();
+                }
+
+                Logging.LogDebug(LogType.Bot, $"Creating Admin script collection");
+                m_adminScriptCollection = new DiscordScriptCollection();
+                await LoadScripts(DiscordData.ScriptAdminFolder, m_adminScriptCollection);      
+            }
+        }
+
+        public Task Uninitalise()
+        {
+            lock (m_mutex)
+            {
+                Logging.LogDebug(LogType.Bot, $"Uninitalising Client");
+                foreach (var scriptCollection in m_scriptCollections)
+                {
+                    Logging.LogDebug(LogType.Bot, $"Disposing of script from guild {scriptCollection.Key}");
+                    scriptCollection.Value.Dispose();
+                }
             }
 
             return Task.CompletedTask;
@@ -75,68 +85,40 @@ namespace Botcord.Discord
 
         private Task client_Ready()
         {
-            Logging.Log(LogType.Discord, LogLevel.Debug, $"Client Ready");
+            Logging.LogDebug(LogType.Discord, $"Client Ready");
             return Task.CompletedTask;
         }
 
         private Task client_GuildAvailable(SocketGuild arg)
         {
-            lock (m_mutex)
+            Logging.LogDebug(LogType.Discord, $"Guild Available {arg.Name}");
+
+            if (!m_scriptCollections.ContainsKey(arg.Id))
             {
-                if (!m_scriptCollections.ContainsKey(arg.Id))
+                Logging.LogDebug(LogType.Bot, $"Connected to guild {arg.Name}");
+            }
+            else
+            {
+                Logging.LogDebug(LogType.Bot,$"Reconnected to guild {arg.Name}");
+
+                DiscordScriptCollection collection;
+                if (!m_scriptCollections.TryRemove(arg.Id, out collection))
                 {
-                    Logging.Log(LogType.Discord, LogLevel.Debug, $"Connected to guild {arg.Name}");
-
-                    Utilities.Execute(() => LoadScriptCollection(arg));
+                    Logging.LogError(LogType.Bot, $"Failed to remove previous instance of guild {arg.Name} attempting to dispose any way.");
+                    collection = m_scriptCollections[arg.Id];
                 }
-                else
+
+                if (collection != null)
                 {
-                    Logging.Log(LogType.Discord, LogLevel.Debug, $"Reconnected to guild {arg.Name}");
-
-                    DiscordScriptCollection collection;
-                    if (!m_scriptCollections.TryRemove(arg.Id, out collection))
-                    {
-                        Logging.Log(LogType.Discord, LogLevel.Debug, $"Failed to remove previous instance of guild {arg.Name} attempting to dispose any way.");
-                        collection = m_scriptCollections[arg.Id];
-                    }
-
-                    if (collection != null)
-                    {
-                        collection.Dispose();
-                    }
-
-                    Utilities.Execute(() => LoadScriptCollection(arg));
-                }
+                    Logging.LogDebug(LogType.Bot, $"Disposing of collection for guild {arg.Name}");
+                    collection.Dispose();
+                }    
             }
 
-            return Task.CompletedTask;
-        }
-
-        public Task Uninitalise()
-        {
-            Logging.Log(LogType.Discord, LogLevel.Debug, $"Uninitalising Client");
+            Logging.LogDebug(LogType.Bot, $"Starting script loading for guild {arg.Name}");
+            Utilities.Execute(() => LoadScriptCollection(arg));
 
             return Task.CompletedTask;
-        }
-
-        public async Task<bool> LoadScriptCollection(SocketGuild guild)
-        {         
-            if (!m_scriptCollections.ContainsKey(guild.Id))
-            {
-                DiscordScriptCollection scriptCollection = new DiscordScriptCollection(guild);
-                if(!m_scriptCollections.TryAdd(guild.Id, scriptCollection))
-                {
-                    Logging.Log(LogType.Discord, LogLevel.Error, $"Failed to add guild {guild.Name} to script collection will be ignored");
-                    return false;
-                }
-                
-                await LoadScripts(DiscordData.ScriptAdminFolder, scriptCollection);
-                await LoadScripts(DiscordData.ScriptGlobalFolder, scriptCollection);
-                string serverScripts = Path.Combine(DiscordData.ScriptFolder, guild.Id.ToString());
-                await LoadScripts(serverScripts, scriptCollection);
-            }
-
-            return true;
         }
 
         public Task<bool> TryScriptCompile(string script)
@@ -168,25 +150,77 @@ namespace Botcord.Discord
             });
         }
 
-        private Task LoadScripts(string folder, DiscordScriptCollection collection)
+        private async Task<bool> LoadScriptCollection(SocketGuild guild)
         {
-            try
+            Logging.LogDebug(LogType.Bot, $"Loading scripts for guild {guild.Name}");
+
+            if (!m_scriptCollections.ContainsKey(guild.Id))
             {
-                if(!Directory.Exists(folder))
+                DiscordScriptCollection scriptCollection = new DiscordScriptCollection(guild);
+                if (!m_scriptCollections.TryAdd(guild.Id, scriptCollection))
                 {
-                    Directory.CreateDirectory(folder);
+                    Logging.LogError(LogType.Bot, $"Failed to add guild {guild.Name} to script collection will be ignored");
+                    return false;
                 }
 
-                var csScripts = Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories);
-                foreach (string script in csScripts)
+                Logging.LogDebug(LogType.Bot, $"Starting Loading scripts for guild {guild.Name}");
+
+                await LoadScripts(DiscordData.ScriptAdminFolder, scriptCollection);
+                await LoadScripts(DiscordData.ScriptGlobalFolder, scriptCollection);
+                string serverScripts = Path.Combine(DiscordData.ScriptFolder, guild.Id.ToString());
+                await LoadScripts(serverScripts, scriptCollection);
+            }
+            else
+            {
+                DiscordScriptCollection scriptCollection;
+                if (m_scriptCollections.TryGetValue(guild.Id, out scriptCollection))
                 {
-                    IEnumerable<IDiscordScript> scripts = null;
-                    if (TryCompileScript(script, out scripts))
+                    Logging.LogDebug(LogType.Bot, $"Starting Reloading scripts for guild {guild.Name}");
+
+                    await LoadScripts(DiscordData.ScriptAdminFolder, scriptCollection);
+                    await LoadScripts(DiscordData.ScriptGlobalFolder, scriptCollection);
+                    string serverScripts = Path.Combine(DiscordData.ScriptFolder, guild.Id.ToString());
+                    await LoadScripts(serverScripts, scriptCollection);
+                }
+                else
+                {
+                    Logging.LogError(LogType.Bot, $"Failed to get script collection for guild {guild.Name} no script will be loaded");
+                    return false;
+                }
+            }
+
+            Logging.LogDebug(LogType.Bot, $"Finished Loading scripts for guild {guild.Name}");
+
+            return true;
+        }
+
+        private Task LoadScripts(string folder, DiscordScriptCollection collection)
+        {
+            Logging.LogDebug(LogType.Bot, $"Loading scripts from folder '{folder}'");
+
+            try
+            {
+                if (!Directory.Exists(folder))
+                {
+                    Logging.LogDebug(LogType.Bot, $"Folder '{folder}' doesnt exist creating folder");
+                    Directory.CreateDirectory(folder);
+                }
+                else
+                {
+                    var csScripts = Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories);
+                    Logging.LogDebug(LogType.Bot, $"Found '{csScripts.Count()}' scripts to compile");
+                    foreach (string script in csScripts)
                     {
-                        foreach (IDiscordScript compiledScript in scripts)
+                        IEnumerable<IDiscordScript> scripts = null;
+                        if (TryCompileScript(script, out scripts))
                         {
-                            DiscordScriptHost scriptHost = new DiscordScriptHost(m_client, compiledScript);
-                            collection.Add(scriptHost);
+                            Logging.LogDebug(LogType.Bot, $"Build '{scripts.Count()}' scripts from file '{script}'");
+                            foreach (IDiscordScript compiledScript in scripts)
+                            {
+                                Logging.LogDebug(LogType.Bot, $"Adding script '{compiledScript.Name}' to collection'");
+                                DiscordScriptHost scriptHost = new DiscordScriptHost(m_client, compiledScript);
+                                collection.Add(scriptHost);
+                            }
                         }
                     }
                 }
@@ -195,6 +229,8 @@ namespace Botcord.Discord
             {
                 Logging.LogException(LogType.Bot, ex, "Failed to load scripts");
             }
+
+            Logging.LogDebug(LogType.Bot, $"Finished Loading scripts from folder '{folder}'");
 
             return Task.CompletedTask;
         }

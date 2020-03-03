@@ -34,7 +34,7 @@ namespace Botcord.Core
 
         public bool IsNullOrEmpty
         {
-            get { return Value == null || Value.ToString() == ""; }
+            get { return Value == null || string.IsNullOrWhiteSpace(Value.ToString()); }
         }
 
         public bool IsFalse

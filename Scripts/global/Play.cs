@@ -128,6 +128,7 @@ namespace Scripts.global
         private const long memeTeamId   = 137641379177168896;
         private const long skylarServer = 371484428658016257;
 
+        private object m_queueMutex = new object();
         private object m_mutex = new object();
         private System.Timers.Timer m_autoDisconnectTimer = null;
         private bool m_disposing = false;
@@ -379,15 +380,18 @@ namespace Scripts.global
 
             if (tag.Contains(","))
             {
-                foreach (var tagItem in tag.Split(','))
+                lock (m_queueMutex)
                 {
-                    if (tagItem == RandomTag)
+                    foreach (var tagItem in tag.Split(','))
                     {
-                        EnqueueRandom();
-                    }
-                    else
-                    {
-                        EnqueueClip(tagItem);
+                        if (tagItem == RandomTag)
+                        {
+                            EnqueueRandom();
+                        }
+                        else
+                        {
+                            EnqueueClip(tagItem);
+                        }
                     }
                 }
             }
@@ -410,15 +414,18 @@ namespace Scripts.global
                     }
                 }
 
-                for (int i = 0; i < amount; i++)
+                lock (m_queueMutex)
                 {
-                    if (tag == RandomTag)
+                    for (int i = 0; i < amount; i++)
                     {
-                        EnqueueRandom();
-                    }
-                    else
-                    {
-                        EnqueueClip(tag);
+                        if (tag == RandomTag)
+                        {
+                            EnqueueRandom();
+                        }
+                        else
+                        {
+                            EnqueueClip(tag);
+                        }
                     }
                 }
             }

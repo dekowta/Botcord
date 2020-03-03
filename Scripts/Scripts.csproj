@@ -13,6 +13,23 @@
     <ProjectReference Include="..\Botcord.Core\Botcord.Core.csproj" />
     <ProjectReference Include="..\Botcord.Discord\Botcord.Discord.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="admin\Admin.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Update="global\8bap.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Update="global\HelloWorld.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Update="global\Play.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Update="global\Remind.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="robocopy $(ProjectDir)global $(SolutionDir)\Botcord\$(OutDir)..\netcoreapp3.1\scripts\global /is /it &#xD;&#xA;robocopy $(ProjectDir)admin $(SolutionDir)\Botcord\$(OutDir)..\netcoreapp3.1\scripts\admin /is /it&#xD;&#xA;exit 0" />
   </Target>
