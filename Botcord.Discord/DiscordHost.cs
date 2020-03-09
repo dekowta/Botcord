@@ -76,6 +76,7 @@ namespace Botcord.Discord
 
             m_client = new DiscordSocketClient(new DiscordSocketConfig()
             {
+               // LogLevel = LogSeverity.Verbose,
                 ConnectionTimeout = timeout,
             });
 
@@ -147,11 +148,12 @@ namespace Botcord.Discord
                 DiscordBotAdmin.Instance.Initalise(m_client, m_adminId);
             }
 
-            if(m_debugId != 0)
-            {
-                Logging.LogInfo(LogType.Bot, $"Starting Bot Discord Logging with id {m_debugId}.");
-                DiscordLogger.Instance.Initalise(m_client, m_debugId);
-            }
+            //disabiling for now as it looks like it can lead to swamping of the thread pool
+            //if(m_debugId != 0)
+            //{
+            //    Logging.LogInfo(LogType.Bot, $"Starting Bot Discord Logging with id {m_debugId}.");
+            //    DiscordLogger.Instance.Initalise(m_client, m_debugId);
+            //}
 
             Logging.LogInfo(LogType.Bot, "Starting Script Manager");
             await m_scriptManager.Initalise(m_client);

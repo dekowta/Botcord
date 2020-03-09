@@ -44,7 +44,7 @@ namespace Botcord.Discord
         {
             foreach(var script in m_scriptCollection)
             {
-                script.DettachGuild(m_attachedGuild);
+                script.Dispose();
             }
 
             m_scriptCollection.Clear();
@@ -94,7 +94,6 @@ namespace Botcord.Discord
                     for(int i = 0; i < m_scriptCollection.Count; i++)
                     {
                         DiscordScriptHost host = m_scriptCollection[i];
-                        host.DettachGuild(m_attachedGuild);
                         host.Dispose();
                         host = null;
                     }

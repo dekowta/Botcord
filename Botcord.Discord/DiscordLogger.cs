@@ -90,6 +90,7 @@ namespace Botcord.Discord
                     Utilities.Execute(async (token) =>
                     {
                         await m_errorChannel.SendMessageAsync(messageItem);
+                        await Task.Delay(500);
                     }, 1.Minute());
                 }
             }
@@ -106,6 +107,7 @@ namespace Botcord.Discord
                     Utilities.Execute(async (token) =>
                     {
                         await m_debugChannel.SendMessageAsync(messageItem);
+                        await Task.Delay(500);
                     }, 1.Minute());
                 }
             }
